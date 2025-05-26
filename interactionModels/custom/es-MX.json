@@ -1,0 +1,108 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "intents": [
+        {
+          "slots": [
+            {
+              "name": "query",
+              "type": "AMAZON.Person"
+            }
+          ],
+          "name": "GptQueryIntent",
+          "samples": [
+            "{query}",
+            "oye {query}",
+            "pregúntale {query}",
+            "pregunta {query}",
+            "dime {query}",
+            "quiero saber {query}",
+            "puedes decirme {query}",
+            "explícame {query}",
+            "necesito saber {query}",
+            "búscame información sobre {query}",
+            "podrías decirme {query}",
+            "ayúdame con {query}",
+            "investiga {query}",
+            "qué sabes sobre {query}",
+            "platícame sobre {query}",
+            "cuéntame sobre {query}",
+            "háblame de {query}",
+            "me puedes explicar {query}",
+            "información sobre {query}",
+            "qué es {query}",
+            "cómo funciona {query}",
+            "por qué {query}",
+            "cuándo {query}",
+            "dónde {query}",
+            "quién {query}",
+            "me interesa {query}",
+            "quiero aprender sobre {query}"
+          ]
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": [
+            "cancelar",
+            "cancela",
+            "ya no",
+            "olvídalo",
+            "salir",
+            "terminar",
+            "cierra el chat",
+            "cierra chat",
+            "finaliza chat",
+            "finalizar conversación",
+            "finaliza conversación"
+          ]
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": ["detente", "para", "alto", "ya basta", "adiós", "hasta luego", "nos vemos", "bye"]
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": [
+            "ayuda",
+            "ayúdame",
+            "qué puedo hacer",
+            "qué puedo preguntarte",
+            "cómo funciona",
+            "instrucciones",
+            "no entiendo",
+            "cómo te uso",
+            "para qué sirves"
+          ]
+        },
+        {
+          "name": "NewTopicIntent",
+          "samples": [
+            "nuevo tema",
+            "cambia de tema",
+            "hablemos de otra cosa",
+            "otro tema",
+            "tema diferente",
+            "nueva conversación",
+            "cambiar tema",
+            "conversación nueva",
+            "limpiar historial"
+          ]
+        },
+        {
+          "name": "AMAZON.StartOverIntent",
+          "samples": ["empezar de nuevo", "comenzar otra vez", "reiniciar", "volver a empezar", "desde el principio"]
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": ["inicio", "regresar", "volver", "menú principal"]
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        }
+      ],
+      "types": [],
+      "invocationName": "modo chat"
+    }
+  }
+}

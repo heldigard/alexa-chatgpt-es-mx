@@ -1,0 +1,47 @@
+{
+  "manifest": {
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:us-east-1:120569612625:function:dab3d3c4-9337-4d41-a272-3efe8c293329:Release_0"
+        },
+        "interfaces": [],
+        "locales": {},
+        "regions": {
+          "NA": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-east-1:120569612625:function:dab3d3c4-9337-4d41-a272-3efe8c293329:Release_0"
+            }
+          },
+          "EU": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:eu-west-1:120569612625:function:dab3d3c4-9337-4d41-a272-3efe8c293329:Release_0"
+            }
+          },
+          "FE": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-west-2:120569612625:function:dab3d3c4-9337-4d41-a272-3efe8c293329:Release_0"
+            }
+          }
+        }
+      }
+    },
+    "manifestVersion": "1.0",
+    "publishingInformation": {
+      "distributionCountries": [],
+      "isAvailableWorldwide": true,
+      "locales": {
+        "es-MX": {
+          "description": "Skill de Alexa que utiliza la API de OpenAI para generar respuestas desde el modelo ChatGPT",
+          "examplePhrases": [
+            "Alexa chat"
+          ],
+          "keywords": [],
+          "name": "Chat",
+          "summary": "ChatGPT en Alexa"
+        }
+      },
+      "testingInstructions": "Sample Testing Instructions"
+    }
+  }
+}
