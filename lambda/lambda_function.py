@@ -9,7 +9,7 @@ import logging
 import json
 import random
 import os
-from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, FORCED_PROVIDER
+from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE
 
 reprompts = [
     "¿Qué más te gustaría saber?",
@@ -33,9 +33,32 @@ api_key = API_KEY
 github_token = GITHUB_TOKEN
 openrouter_api_key = OPENROUTER_API_KEY
 cerebras_api_key = CEREBRAS_API_KEY
+gemini_api_key = GEMINI_API_KEY
 
 # Configuración para cada proveedor
 PROVIDERS = {
+    # Gemini 2.0 Flash (Google API directo, solo texto)
+    "gemini_20": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        "model": "gemini-2.0-flash",
+        "get_headers": lambda key: {
+            "Content-Type": CONTENT_TYPE_JSON
+        },
+        "get_key": lambda: gemini_api_key,
+        "max_tokens": 800,
+        "timeout": 10
+    },
+    # Gemini 2.5 Flash Preview (Google API directo, solo texto)
+    "gemini_25": {
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent",
+        "model": "gemini-2.5-flash-preview-05-20",
+        "get_headers": lambda key: {
+            "Content-Type": CONTENT_TYPE_JSON
+        },
+        "get_key": lambda: gemini_api_key,
+        "max_tokens": 800,
+        "timeout": 10
+    },
     "openai": {
         "url": "https://api.openai.com/v1/chat/completions",
         "model": "gpt-4.1-mini",  # Modelo más actualizado y eficiente
@@ -377,6 +400,11 @@ if openrouter_api_key:
         "google_gemini_20",  # Google Gemini 2.0 Flash
         "google_gemini_25"   # Google Gemini 2.5 Flash Preview
     ])
+if gemini_api_key:
+    available_providers.extend([
+        "gemini_20",  # Gemini 2.0 Flash (Google API directo)
+        "gemini_25"   # Gemini 2.5 Flash Preview (Google API directo)
+    ])
 # Cerebras: agregar si la API key está presente
 if cerebras_api_key:
     available_providers.extend([
@@ -697,6 +725,7 @@ def try_provider(provider_name, chat_history, new_question):
     Intenta obtener respuesta de un proveedor específico
     Devuelve (respuesta, tipo_de_error) donde tipo_de_error puede ser None, 'connection', 'other'
     """
+
     try:
         if provider_name not in PROVIDERS:
             logger.error(f"Proveedor {provider_name} no encontrado en configuración")
@@ -713,21 +742,96 @@ def try_provider(provider_name, chat_history, new_question):
         headers = provider["get_headers"](key)
         url = provider["url"]
         model = provider["model"]
+        timeout = provider.get("timeout", 8)
 
-        # Crear mensajes optimizados para español
-        messages = [{
-            "role": "system",
-            "content": """Eres un asistente de inteligencia artificial especializado en responder en español de manera clara y concisa.
+        # Gemini Google API (directo)
+        if provider_name in ["gemini_20", "gemini_25"]:
+            # Construir el prompt para Gemini
+            system_prompt = f"""Eres un asistente de inteligencia artificial especializado en responder en español de manera clara y concisa para personas de {COUNTRY}.
 
 REGLAS IMPORTANTES:
 - Responde SIEMPRE en español, sin importar el idioma de la pregunta
-- Sé conversacional, amigable y natural como si fueras un amigo conocedor
+- Sé conversacional, amigable y natural como si fueras un amigo conocedor con un toque {TONE}
 - Máximo 150 palabras por respuesta para mantener la atención
-- Usa ejemplos mexicanos/latinoamericanos cuando sea relevante
+- Usa ejemplos y referencias culturales de {COUNTRY} cuando sea relevante
 - Si no sabes algo, admítelo honestamente
 - Evita jerga técnica excesiva, explica de forma simple
 
-Tu objetivo es ser útil, informativo y entretenido para usuarios de habla hispana."""
+Tu objetivo es ser útil, informativo y entretenido para usuarios de habla hispana de {COUNTRY}."""
+            contents = []
+
+            # Agregar el system prompt como parte inicial si aplica
+            if system_prompt:
+                contents.append({
+                    "role": "user",
+                    "parts": [{"text": system_prompt}]
+                })
+
+            # Historial (últimas 6 interacciones)
+            for question, answer in chat_history[-6:]:
+                contents.append({"role": "user", "parts": [{"text": question}]})
+                contents.append({"role": "model", "parts": [{"text": answer}]})
+            # Agregar la nueva pregunta del usuario
+            contents.append({"role": "user", "parts": [{"text": new_question}]})
+
+            data = {"contents": contents}
+            # La API key va en la URL como ?key=...
+            url = f"{url}?key={key}"
+            logger.info(f"Enviando request a Gemini directo: {provider_name}")
+            response = requests.post(url, headers=headers, data=json.dumps(data), timeout=timeout)
+            if not response.ok:
+                error_msg = f"HTTP {response.status_code}"
+                try:
+                    error_data = response.json()
+                    if 'error' in error_data:
+                        error_msg += f": {error_data['error'].get('message', 'Error desconocido')}"
+                except json.JSONDecodeError:
+                    error_msg += f": {response.text[:100]}"
+                logger.error(f"Error HTTP en Gemini: {error_msg}")
+                if response.status_code >= 500:
+                    return f"Error {error_msg}", "connection"
+                return f"Error {error_msg}", "other"
+            try:
+                response_data = response.json()
+            except json.JSONDecodeError as e:
+                logger.error("Error parseando JSON de Gemini: %s", str(e))
+                return "Error: Respuesta inválida de Gemini", "other"
+            logger.info(f"Respuesta JSON recibida de Gemini: {list(response_data.keys())}")
+            # Gemini responde con 'candidates' y dentro 'content'->'parts'
+            if 'candidates' in response_data and len(response_data['candidates']) > 0:
+                candidate = response_data['candidates'][0]
+                if 'content' in candidate and 'parts' in candidate['content']:
+                    # Concatenar todos los textos de los parts
+                    content = " ".join([p.get('text', '') for p in candidate['content']['parts']]).strip()
+                    if content:
+                        logger.info(f"Respuesta exitosa de Gemini: {len(content)} caracteres")
+                        return content, None
+                    else:
+                        logger.error("Respuesta vacía de Gemini")
+                        return "Error: Respuesta vacía de Gemini", "connection"
+                else:
+                    logger.error("Formato de respuesta inválido de Gemini: candidate=%s", str(candidate))
+                    return "Error: Formato de respuesta inválido de Gemini", "other"
+            else:
+                error_msg = response_data.get('error', {}).get('message', 'Formato de respuesta inesperado')
+                logger.error(f"Error en respuesta de Gemini: {error_msg}, keys={list(response_data.keys())}")
+                return f"Error: {error_msg}", "connection"
+
+        # Otros proveedores (OpenAI, OpenRouter, etc)
+        # Crear mensajes optimizados para español
+        messages = [{
+            "role": "system",
+            "content": f"""Eres un asistente de inteligencia artificial con un toque latino {TONE}, especializado en responder de manera clara, concisa y amigable, ideal para una conversación por voz.
+
+REGLAS CLAVE PARA RESPONDER:
+- Habla siempre en español latino {TONE}, con un tono amable y cercano.
+- Tus respuestas deben ser como una charla fluida: naturales, conversacionales y fáciles de entender al escucharlas.
+- Sé breve y al grano: idealmente no más de 120-180 palabras, para que sea fácil seguirte la conversación solo con audio.
+- Cuando sea apropiado y encaje de forma natural, incluye ejemplos o referencias culturales de {COUNTRY}.
+- Si no tienes la respuesta a algo, admítelo con sinceridad. Es mejor ser honesto.
+- Explica las cosas de forma sencilla, evitando términos muy técnicos, para que todos te puedan entender.
+
+Tu misión es ser un parcero conversador y útil: que la gente en {COUNTRY} disfrute charlar contigo y encuentre valor en tus respuestas."""
         }]
 
         # Agregar historial reciente (máximo 6 intercambios para optimizar tokens)
@@ -769,8 +873,6 @@ Tu objetivo es ser útil, informativo y entretenido para usuarios de habla hispa
         else:  # OpenAI
             data["presence_penalty"] = 0.2
             data["frequency_penalty"] = 0.2
-
-        timeout = provider.get("timeout", 8)
 
         logger.info(f"Enviando request a {provider_name} con modelo {model}")
         response = requests.post(url, headers=headers, data=json.dumps(data), timeout=timeout)

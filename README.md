@@ -77,6 +77,17 @@ alexa-chatgpt/
    - Importa `skill.json` e `interactionModels/custom/es-MX.json` en el Developer Console de Alexa.
    - Conecta la skill con tu función Lambda.
 
+## Personalización de país y tono
+
+Puedes personalizar el país y el tono de las respuestas editando el archivo `config.py`:
+
+```python
+COUNTRY = "Colombia"   # Cambia por el país que desees
+TONE = "colombiano"    # Cambia por el tono o gentilicio adecuado (ej: mexicano, argentino, chileno)
+```
+
+Esto hará que la skill adapte sus respuestas y ejemplos culturales al país y tono que configures.
+
 ## 🧠 Lógica de Proveedor y Fallback
 
 - Al iniciar sesión, se selecciona aleatoriamente un proveedor/modelo disponible (a menos que uses `FORCED_PROVIDER`).
