@@ -176,6 +176,22 @@ class ProviderManager:
                 "max_tokens": 800,
                 "timeout": 10
             },
+            "openrouter_deepseek_r1_0528": {
+                "url": OPENROUTER_URL,
+                "model": "deepseek/deepseek-r1-0528",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 10
+            },
+            "openrouter_deepseek_r1_0528_free": {
+                "url": OPENROUTER_URL,
+                "model": "deepseek/deepseek-r1-0528:free",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 10
+            },
             "openrouter_deepseek_chimera": {
                 "url": OPENROUTER_URL,
                 "model": "tngtech/deepseek-r1t-chimera:free",
@@ -345,7 +361,7 @@ class ProviderManager:
         if openrouter_api_key:
             # Agregar OpenRouter original y todos los modelos gratuitos con prefijo 'openrouter_'
             available.extend([
-                "openrouter", "openrouter_deepseek_r1_distill_llama_70b", "openrouter_deepseek_r1", "openrouter_deepseek_r1_free",
+                "openrouter", "openrouter_deepseek_r1_distill_llama_70b", "openrouter_deepseek_r1", "openrouter_deepseek_r1_free", "openrouter_deepseek_r1_0528", "openrouter_deepseek_r1_0528_free",
                 "openrouter_deepseek_chimera", "openrouter_qwen3_235b_free", "openrouter_qwen3_235b", "openrouter_microsoft_mai", "openrouter_llama_maverick",
                 "openrouter_qwen_qwq_free", "openrouter_qwen_qwq", "openrouter_deepseek_chat_v3", "openrouter_deepseek_chat_v3_free",
                 "openrouter_openai_gpt41_mini", "openrouter_google_gemini_20", "openrouter_google_gemini_25"
