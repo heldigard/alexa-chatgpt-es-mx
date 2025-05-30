@@ -9,7 +9,8 @@ import logging
 import json
 import random
 import os
-from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE
+import re
+from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE, DEEPINFRA_API_KEY
 
 # =====================================================================
 # CONFIGURACIÓN Y CONSTANTES GLOBALES
@@ -36,7 +37,6 @@ retry_prompts = [
 CONTENT_TYPE_JSON = "application/json"
 
 # Constantes para OpenRouter
-OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_REFERER = "https://alexa-chatgpt.com"
 OPENROUTER_TITLE = "Alexa ChatGPT Skill"
 
@@ -46,6 +46,7 @@ github_token = GITHUB_TOKEN
 openrouter_api_key = OPENROUTER_API_KEY
 cerebras_api_key = CEREBRAS_API_KEY
 gemini_api_key = GEMINI_API_KEY
+deepinfra_api_key = DEEPINFRA_API_KEY
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -63,6 +64,8 @@ class ProviderManager:
     GEMINI_25_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent"
     OPENAI_URL = "https://api.openai.com/v1/chat/completions"
     GITHUB_URL = "https://models.github.ai/inference/chat/completions"
+    DEEPINFRA_URL = "https://api.deepinfra.com/v1/openai/chat/completions"
+    OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
     def __init__(self):
         self.providers = self._configure_providers()
@@ -82,6 +85,7 @@ class ProviderManager:
         providers.update(self._get_github_providers())
         providers.update(self._get_openrouter_providers())
         providers.update(self._get_cerebras_providers())
+        providers.update(self._get_deepinfra_providers())
         return providers
 
     def _get_gemini_providers(self):
@@ -93,7 +97,7 @@ class ProviderManager:
                 "get_headers": lambda key: {"Content-Type": CONTENT_TYPE_JSON},
                 "get_key": lambda: gemini_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             # Gemini 2.5 Flash Preview (Google API directo, solo texto)
             "gemini_25": {
@@ -102,7 +106,7 @@ class ProviderManager:
                 "get_headers": lambda key: {"Content-Type": CONTENT_TYPE_JSON},
                 "get_key": lambda: gemini_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
         }
 
@@ -117,7 +121,7 @@ class ProviderManager:
                 },
                 "get_key": lambda: api_key,
                 "max_tokens": 800,
-                "timeout": 8
+                "timeout": 7
             },
         }
 
@@ -132,14 +136,14 @@ class ProviderManager:
                 },
                 "get_key": lambda: github_token,
                 "max_tokens": 800,
-                "timeout": 8
+                "timeout": 7
             },
         }
 
     def _get_openrouter_providers(self):
         return {
             "openrouter": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "meta-llama/llama-4-maverick",
                 "get_headers": lambda key: {
                     "Authorization": f"Bearer {key}",
@@ -149,144 +153,143 @@ class ProviderManager:
                 },
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
-            # Nuevos modelos gratuitos de OpenRouter
             "openrouter_deepseek_r1_distill_llama_70b": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1-distill-llama-70b:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_deepseek_r1": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_deepseek_r1_free": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_deepseek_r1_0528": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1-0528",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_deepseek_r1_0528_free": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1-0528:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_deepseek_chimera": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "tngtech/deepseek-r1t-chimera:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_qwen3_235b_free": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "qwen/qwen3-235b-a22b:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_qwen3_235b": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "qwen/qwen3-235b-a22b",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_microsoft_mai": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "microsoft/mai-ds-r1:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_llama_maverick": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "meta-llama/llama-4-maverick:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_qwen_qwq_free": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "qwen/qwq-32b:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_qwen_qwq": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "qwen/qwq-32b",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_deepseek_chat_v3": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-chat-v3-0324",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_deepseek_chat_v3_free": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-chat-v3-0324:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_openai_gpt41_mini": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "openai/gpt-4.1-mini",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_google_gemini_20": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "google/gemini-2.0-flash-001",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "openrouter_google_gemini_25": {
-                "url": OPENROUTER_URL,
+                "url": self.OPENROUTER_URL,
                 "model": "google/gemini-2.5-flash-preview-05-20",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
         }
 
@@ -298,7 +301,7 @@ class ProviderManager:
                 "get_headers": self._get_cerebras_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "cerebras_llama4_scout": {
                 "url": self.CEREBRAS_URL,
@@ -306,7 +309,7 @@ class ProviderManager:
                 "get_headers": self._get_cerebras_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "cerebras_llama33_70b": {
                 "url": self.CEREBRAS_URL,
@@ -314,7 +317,7 @@ class ProviderManager:
                 "get_headers": self._get_cerebras_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "cerebras_qwen3_32b": {
                 "url": self.CEREBRAS_URL,
@@ -322,7 +325,7 @@ class ProviderManager:
                 "get_headers": self._get_cerebras_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
             },
             "cerebras_deepseek_r1_distill_llama_70b": {
                 "url": self.CEREBRAS_URL,
@@ -330,7 +333,59 @@ class ProviderManager:
                 "get_headers": self._get_cerebras_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
-                "timeout": 10
+                "timeout": 7
+            },
+        }
+
+    def _get_deepinfra_providers(self):
+        return {
+            "deepinfra_deepseek_v3": {
+                "url": self.DEEPINFRA_URL,
+                "model": "deepseek-ai/DeepSeek-V3-0324",
+                "get_headers": self._get_deepinfra_headers,
+                "get_key": lambda: deepinfra_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "deepinfra_qwen_qwq_32b": {
+                "url": self.DEEPINFRA_URL,
+                "model": "Qwen/QwQ-32B",
+                "get_headers": self._get_deepinfra_headers,
+                "get_key": lambda: deepinfra_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "deepinfra_deepseek_r1": {
+                "url": self.DEEPINFRA_URL,
+                "model": "deepseek-ai/DeepSeek-R1",
+                "get_headers": self._get_deepinfra_headers,
+                "get_key": lambda: deepinfra_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "deepinfra_llama4_maverick": {
+                "url": self.DEEPINFRA_URL,
+                "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+                "get_headers": self._get_deepinfra_headers,
+                "get_key": lambda: deepinfra_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "deepinfra_qwen3_32b": {
+                "url": self.DEEPINFRA_URL,
+                "model": "Qwen/Qwen3-32B",
+                "get_headers": self._get_deepinfra_headers,
+                "get_key": lambda: deepinfra_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "deepinfra_deepseek_r1_0528": {
+                "url": self.DEEPINFRA_URL,
+                "model": "deepseek-ai/DeepSeek-R1-0528",
+                "get_headers": self._get_deepinfra_headers,
+                "get_key": lambda: deepinfra_api_key,
+                "max_tokens": 800,
+                "timeout": 7
             },
         }
 
@@ -345,6 +400,12 @@ class ProviderManager:
 
     def _get_cerebras_headers(self, key):
         """Headers estándar para Cerebras"""
+        return {
+            "Authorization": f"Bearer {key}",
+            "Content-Type": CONTENT_TYPE_JSON
+        }
+
+    def _get_deepinfra_headers(self, key):
         return {
             "Authorization": f"Bearer {key}",
             "Content-Type": CONTENT_TYPE_JSON
@@ -373,7 +434,15 @@ class ProviderManager:
                 "cerebras", "cerebras_llama4_scout", "cerebras_llama33_70b",
                 "cerebras_qwen3_32b", "cerebras_deepseek_r1_distill_llama_70b"
             ])
-
+        if deepinfra_api_key:
+            available.extend([
+                "deepinfra_deepseek_v3",
+                "deepinfra_qwen_qwq_32b",
+                "deepinfra_deepseek_r1",
+                "deepinfra_llama4_maverick",
+                "deepinfra_qwen3_32b",
+                "deepinfra_deepseek_r1_0528"
+            ])
         return available
 
     def select_random_provider(self):
@@ -417,9 +486,12 @@ class ResponseGenerator:
         if FORCED_PROVIDER and FORCED_PROVIDER in self.provider_manager.available_providers:
             session_attr["current_provider"] = FORCED_PROVIDER
             session_attr["failed_providers"] = []
+            current_provider = FORCED_PROVIDER
+            failed_providers = []
+        else:
+            current_provider = session_attr.get("current_provider")
+            failed_providers = session_attr.get("failed_providers", [])
 
-        current_provider = session_attr.get("current_provider")
-        failed_providers = session_attr.get("failed_providers", [])
         chat_history = session_attr.get("chat_history", [])
 
         # Si no hay proveedor actual, seleccionar uno
@@ -432,9 +504,10 @@ class ResponseGenerator:
 
         logger.info(f"Resultado del proveedor {current_provider}: error_type={error_type}, respuesta_vacia={not response or not response.strip()}")
 
-        # SOLO hacer fallback si realmente hay un error de conexión
-        if error_type == "connection" and current_provider not in failed_providers:
-            response, error_type = self._handle_fallback(session_attr, current_provider, chat_history, new_question)
+        # Hacer fallback si hay error de conexión o respuesta vacía
+        if ((error_type == "connection" or not response or not response.strip()) and current_provider not in failed_providers):
+            if not (FORCED_PROVIDER and FORCED_PROVIDER in self.provider_manager.available_providers):
+                response, error_type = self._handle_fallback(session_attr, current_provider, chat_history, new_question)
 
         # Si la respuesta fue exitosa, limpiar la lista de proveedores fallidos
         if error_type is None:
@@ -444,6 +517,10 @@ class ResponseGenerator:
 
     def _ensure_valid_provider(self, session_attr, current_provider, failed_providers):
         """Asegura que tengamos un proveedor válido"""
+        # Si hay FORCED_PROVIDER, siempre usarlo
+        if FORCED_PROVIDER and FORCED_PROVIDER in self.provider_manager.available_providers:
+            session_attr["current_provider"] = FORCED_PROVIDER
+            return FORCED_PROVIDER
         if not current_provider or current_provider in failed_providers:
             available = [p for p in self.provider_manager.available_providers if p not in failed_providers]
             if available:
@@ -459,6 +536,11 @@ class ResponseGenerator:
 
     def _handle_fallback(self, session_attr, current_provider, chat_history, new_question):
         """Maneja el fallback a otros proveedores en caso de error"""
+        # Si hay FORCED_PROVIDER, no hacer fallback
+        if FORCED_PROVIDER and FORCED_PROVIDER in self.provider_manager.available_providers:
+            logger.error(f"FORCED_PROVIDER '{FORCED_PROVIDER}' falló, no se hará fallback a otros proveedores.")
+            response = "Lo siento, el proveedor de IA seleccionado no está disponible temporalmente. Por favor, inténtalo de nuevo en unos minutos."
+            return response, "connection"
         logger.warning(f"Proveedor {current_provider} falló con error de conexión, iniciando fallback...")
         session_attr["failed_providers"].append(current_provider)
 
@@ -504,7 +586,7 @@ class ResponseGenerator:
                 return f"Error: Proveedor {provider_name} no configurado", "other"
 
             key = provider["get_key"]()
-            if not self._validate_api_key(key, provider_name):
+            if not self._validate_api_key(key):
                 return f"Error: API key no configurada para {provider_name}", "other"
 
             # Determinar el tipo de proveedor y procesar la respuesta
@@ -529,7 +611,7 @@ class ResponseGenerator:
             logger.error(f"Error inesperado en {provider_name}: {str(e)}")
             return f"Error: Problema inesperado con {provider_name}", "other"
 
-    def _validate_api_key(self, key, provider_name):
+    def _validate_api_key(self, key):
         """Valida que la API key esté configurada"""
         return key and key != "YOUR_API_KEY"
 
@@ -709,6 +791,12 @@ Tu misión es ser un interlocutor conversador y útil: que la gente en {COUNTRY}
             return f"Error {error_msg}", "connection"
         return f"Error {error_msg}", "other"
 
+def remove_think_tags(text):
+    """Elimina cualquier bloque <think>...</think> del texto (incluyendo etiquetas)."""
+    if not text:
+        return text
+    return re.sub(r'<think>[\s\S]*?</think>', '', text, flags=re.IGNORECASE).strip()
+
 # Inicializar instancias globales
 provider_manager = ProviderManager()
 response_generator = ResponseGenerator(provider_manager)
@@ -728,8 +816,11 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
         session_attr = handler_input.attributes_manager.session_attributes
         session_attr["chat_history"] = []
-        # Seleccionar proveedor aleatorio al inicio de la sesión
-        session_attr["current_provider"] = provider_manager.select_random_provider()
+        # Seleccionar proveedor forzado o aleatorio al inicio de la sesión
+        if FORCED_PROVIDER and FORCED_PROVIDER in provider_manager.available_providers:
+            session_attr["current_provider"] = FORCED_PROVIDER
+        else:
+            session_attr["current_provider"] = provider_manager.select_random_provider()
         session_attr["failed_providers"] = []
 
         logger.info(f"Sesión iniciada con proveedor: {session_attr['current_provider']}")
@@ -767,13 +858,19 @@ class GptQueryIntentHandler(AbstractRequestHandler):
             if "chat_history" not in session_attr:
                 session_attr["chat_history"] = []
             if "current_provider" not in session_attr:
-                session_attr["current_provider"] = provider_manager.select_random_provider()
+                if FORCED_PROVIDER and FORCED_PROVIDER in provider_manager.available_providers:
+                    session_attr["current_provider"] = FORCED_PROVIDER
+                else:
+                    session_attr["current_provider"] = provider_manager.select_random_provider()
             if "failed_providers" not in session_attr:
                 session_attr["failed_providers"] = []
 
             response, error_type = response_generator.generate_response(session_attr, query)
 
             logger.info(f"Respuesta final - error_type: {error_type}, longitud_respuesta: {len(response) if response else 0}")
+
+            # Limpiar la respuesta de <think>...</think>
+            response_clean = remove_think_tags(response)
 
             # Si hay error de conexión/modelo, invitar a reintentar
             if error_type == "connection":
@@ -786,19 +883,19 @@ class GptQueryIntentHandler(AbstractRequestHandler):
                 )
 
             # Verificar que la respuesta no esté vacía
-            if not response or not response.strip():
-                response = "Lo siento, no pude generar una respuesta en este momento. ¿Puedes intentar con otra pregunta?"
+            if not response_clean or not response_clean.strip():
+                response_clean = "Lo siento, no pude generar una respuesta en este momento. ¿Puedes intentar con otra pregunta?"
 
             # Solo agregar al historial si la respuesta fue exitosa (no contiene "Error")
             if error_type is None:
-                session_attr["chat_history"].append((query, response))
+                session_attr["chat_history"].append((query, response_clean))
                 # Mantener solo las últimas 8 interacciones para optimizar tokens
                 if len(session_attr["chat_history"]) > 8:
                     session_attr["chat_history"] = session_attr["chat_history"][-8:]
 
             return (
                 handler_input.response_builder
-                    .speak(response)
+                    .speak(response_clean)
                     .ask(random.choice(reprompts))
                     .response
             )
