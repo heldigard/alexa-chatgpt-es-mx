@@ -19,7 +19,13 @@ La skill soporta decenas de modelos de IA conversacional. Puedes forzar el uso d
 | Proveedor      | Provider Key (FORCED_PROVIDER)                | Modelo (model)                                      |
 |---------------|-----------------------------------------------|-----------------------------------------------------|
 | **OpenAI**    | `openai`                                      | gpt-4.1-mini                                        |
+|               | `openai_gpt4o_mini`                           | gpt-4o-mini                                         |
+|               | `openai_o4_mini`                              | o4-mini                                             |
+|               | `openai_o3_mini`                              | o3-mini                                             |
 | **GitHub**    | `github`                                      | openai/gpt-4.1-mini                                 |
+|               | `github_openai_o4_mini`                       | openai/o4-mini                                      |
+|               | `github_openai_o3_mini`                       | openai/o3-mini                                      |
+|               | `github_openai_gpt4o_mini`                    | openai/gpt-4o-mini                                  |
 | **Gemini**    | `gemini_20`                                   | gemini-2.0-flash                                    |
 | (Google)      | `gemini_25`                                   | gemini-2.5-flash-preview-05-20                      |
 | **OpenRouter**| `openrouter`                                  | meta-llama/llama-4-maverick                         |

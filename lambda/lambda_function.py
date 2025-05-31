@@ -127,6 +127,39 @@ class ProviderManager:
                 "max_tokens": 800,
                 "timeout": 7
             },
+            "openai_gpt4o_mini": {
+                "url": self.OPENAI_URL,
+                "model": "gpt-4o-mini",
+                "get_headers": lambda key: {
+                    "Authorization": f"Bearer {key}",
+                    "Content-Type": CONTENT_TYPE_JSON
+                },
+                "get_key": lambda: api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openai_o4_mini": {
+                "url": self.OPENAI_URL,
+                "model": "o4-mini",
+                "get_headers": lambda key: {
+                    "Authorization": f"Bearer {key}",
+                    "Content-Type": CONTENT_TYPE_JSON
+                },
+                "get_key": lambda: api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openai_o3_mini": {
+                "url": self.OPENAI_URL,
+                "model": "o3-mini",
+                "get_headers": lambda key: {
+                    "Authorization": f"Bearer {key}",
+                    "Content-Type": CONTENT_TYPE_JSON
+                },
+                "get_key": lambda: api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
         }
 
     def _get_github_providers(self):
@@ -134,6 +167,39 @@ class ProviderManager:
             "github": {
                 "url": self.GITHUB_URL,
                 "model": "openai/gpt-4.1-mini",
+                "get_headers": lambda key: {
+                    "Authorization": f"Bearer {key}",
+                    "Content-Type": CONTENT_TYPE_JSON
+                },
+                "get_key": lambda: github_token,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "github_openai_o4_mini": {
+                "url": self.GITHUB_URL,
+                "model": "openai/o4-mini",
+                "get_headers": lambda key: {
+                    "Authorization": f"Bearer {key}",
+                    "Content-Type": CONTENT_TYPE_JSON
+                },
+                "get_key": lambda: github_token,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "github_openai_o3_mini": {
+                "url": self.GITHUB_URL,
+                "model": "openai/o3-mini",
+                "get_headers": lambda key: {
+                    "Authorization": f"Bearer {key}",
+                    "Content-Type": CONTENT_TYPE_JSON
+                },
+                "get_key": lambda: github_token,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "github_openai_gpt4o_mini": {
+                "url": self.GITHUB_URL,
+                "model": "openai/gpt-4o-mini",
                 "get_headers": lambda key: {
                     "Authorization": f"Bearer {key}",
                     "Content-Type": CONTENT_TYPE_JSON
@@ -426,23 +492,62 @@ class ProviderManager:
         available = []
 
         if api_key:
-            available.append("openai")
+            available.extend([
+                "openai",
+                "openai_gpt4o_mini",
+                "openai_o4_mini",
+                "openai_o3_mini"
+            ])
         if github_token:
-            available.append("github")
+            available.extend([
+                "github",
+                "github_openai_o4_mini",
+                "github_openai_o3_mini",
+                "github_openai_gpt4o_mini"
+            ])
         if openrouter_api_key:
             # Agregar OpenRouter original y todos los modelos gratuitos con prefijo 'openrouter_'
+            # Organización por familias de modelos para mayor claridad
             available.extend([
-                "openrouter", "openrouter_deepseek_r1_distill_llama_70b", "openrouter_deepseek_r1", "openrouter_deepseek_r1_free", "openrouter_deepseek_r1_0528", "openrouter_deepseek_r1_0528_free",
-                "openrouter_deepseek_chimera", "openrouter_qwen3_235b_free", "openrouter_qwen3_235b", "openrouter_microsoft_mai", "openrouter_llama_maverick",
-                "openrouter_qwen_qwq_free", "openrouter_qwen_qwq", "openrouter_deepseek_chat_v3", "openrouter_deepseek_chat_v3_free",
-                "openrouter_openai_gpt41_mini", "openrouter_google_gemini_20", "openrouter_google_gemini_25"
+                # Modelos Llama
+                "openrouter",  # meta-llama/llama-4-maverick
+                "openrouter_llama_maverick",  # meta-llama/llama-4-maverick:free
+
+                # Modelos DeepSeek
+                "openrouter_deepseek_r1",  # deepseek/deepseek-r1
+                "openrouter_deepseek_r1_free",  # deepseek/deepseek-r1:free
+                "openrouter_deepseek_r1_distill_llama_70b",  # deepseek/deepseek-r1-distill-llama-70b:free
+                "openrouter_deepseek_r1_0528",  # deepseek/deepseek-r1-0528
+                "openrouter_deepseek_r1_0528_free",  # deepseek/deepseek-r1-0528:free
+                "openrouter_deepseek_chimera",  # tngtech/deepseek-r1t-chimera:free
+                "openrouter_deepseek_chat_v3",  # deepseek/deepseek-chat-v3-0324
+                "openrouter_deepseek_chat_v3_free",  # deepseek/deepseek-chat-v3-0324:free
+
+                # Modelos Qwen
+                "openrouter_qwen3_235b",  # qwen/qwen3-235b-a22b
+                "openrouter_qwen3_235b_free",  # qwen/qwen3-235b-a22b:free
+                "openrouter_qwen_qwq",  # qwen/qwq-32b
+                "openrouter_qwen_qwq_free",  # qwen/qwq-32b:free
+
+                # Modelos Microsoft
+                "openrouter_microsoft_mai",  # microsoft/mai-ds-r1:free
+
+                # Modelos OpenAI vía OpenRouter
+                "openrouter_openai_gpt41_mini",  # openai/gpt-4.1-mini
+
+                # Modelos Google Gemini vía OpenRouter
+                "openrouter_google_gemini_20",  # google/gemini-2.0-flash-001
+                "openrouter_google_gemini_25",  # google/gemini-2.5-flash-preview-05-20
             ])
         if gemini_api_key:
             available.extend(["gemini_20", "gemini_25"])
         if cerebras_api_key:
             available.extend([
-                "cerebras", "cerebras_llama4_scout", "cerebras_llama33_70b",
-                "cerebras_qwen3_32b", "cerebras_deepseek_r1_distill_llama_70b"
+                "cerebras",
+                "cerebras_llama4_scout",
+                "cerebras_llama33_70b",
+                "cerebras_qwen3_32b",
+                "cerebras_deepseek_r1_distill_llama_70b"
             ])
         if deepinfra_api_key:
             available.extend([
@@ -697,7 +802,7 @@ class ResponseGenerator:
 
     def _get_system_prompt(self):
         """Genera el prompt del sistema optimizado para conversaciones en español"""
-        return f"""Eres un asistente de inteligencia artificial con un toque colombiano {TONE}, especializado en responder de manera clara, concisa y amigable, ideal para una conversación por voz.
+        return f"""Eres un asistente de inteligencia artificial con un toque {TONE}, especializado en responder de manera clara, concisa y amigable, ideal para una conversación por voz.
 
 REGLAS CLAVE PARA RESPONDER:
 - Habla siempre en español latino {TONE}, con un tono amable y cercano.
