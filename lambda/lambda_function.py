@@ -10,7 +10,7 @@ import json
 import random
 import os
 import re
-from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE, DEEPINFRA_API_KEY
+from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE, DEEPINFRA_API_KEY, DEEPSEEK_API_KEY, MOONSHOT_API_KEY
 
 # =====================================================================
 # CONFIGURACIÓN Y CONSTANTES GLOBALES
@@ -47,6 +47,8 @@ openrouter_api_key = OPENROUTER_API_KEY
 cerebras_api_key = CEREBRAS_API_KEY
 gemini_api_key = GEMINI_API_KEY
 deepinfra_api_key = DEEPINFRA_API_KEY
+deepseek_api_key = DEEPSEEK_API_KEY
+moonshot_api_key = MOONSHOT_API_KEY
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -66,6 +68,7 @@ class ProviderManager:
     GITHUB_URL = "https://models.github.ai/inference/chat/completions"
     DEEPINFRA_URL = "https://api.deepinfra.com/v1/openai/chat/completions"
     OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+    MOONSHOT_URL = "https://api.moonshot.cn/v1/chat/completions"
 
     def __init__(self):
         self.providers = self._configure_providers()
@@ -86,6 +89,7 @@ class ProviderManager:
         providers.update(self._get_openrouter_providers())
         providers.update(self._get_cerebras_providers())
         providers.update(self._get_deepinfra_providers())
+        providers.update(self._get_moonshot_providers())
         return providers
 
     def _get_gemini_providers(self):
@@ -298,7 +302,7 @@ class ProviderManager:
             "cerebras": {
                 "url": self.CEREBRAS_URL,
                 "model": "llama-4-scout-17b-16e-instruct",
-                "get_headers": self._get_cerebras_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -306,7 +310,7 @@ class ProviderManager:
             "cerebras_llama4_scout": {
                 "url": self.CEREBRAS_URL,
                 "model": "llama-4-scout-17b-16e-instruct",
-                "get_headers": self._get_cerebras_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -314,7 +318,7 @@ class ProviderManager:
             "cerebras_llama33_70b": {
                 "url": self.CEREBRAS_URL,
                 "model": "llama-3.3-70b",
-                "get_headers": self._get_cerebras_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -322,7 +326,7 @@ class ProviderManager:
             "cerebras_qwen3_32b": {
                 "url": self.CEREBRAS_URL,
                 "model": "qwen-3-32b",
-                "get_headers": self._get_cerebras_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -330,7 +334,7 @@ class ProviderManager:
             "cerebras_deepseek_r1_distill_llama_70b": {
                 "url": self.CEREBRAS_URL,
                 "model": "deepseek-r1-distill-llama-70b",
-                "get_headers": self._get_cerebras_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -342,7 +346,7 @@ class ProviderManager:
             "deepinfra_deepseek_v3": {
                 "url": self.DEEPINFRA_URL,
                 "model": "deepseek-ai/DeepSeek-V3-0324",
-                "get_headers": self._get_deepinfra_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -350,7 +354,7 @@ class ProviderManager:
             "deepinfra_qwen_qwq_32b": {
                 "url": self.DEEPINFRA_URL,
                 "model": "Qwen/QwQ-32B",
-                "get_headers": self._get_deepinfra_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -358,7 +362,7 @@ class ProviderManager:
             "deepinfra_deepseek_r1": {
                 "url": self.DEEPINFRA_URL,
                 "model": "deepseek-ai/DeepSeek-R1",
-                "get_headers": self._get_deepinfra_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -366,7 +370,7 @@ class ProviderManager:
             "deepinfra_llama4_maverick": {
                 "url": self.DEEPINFRA_URL,
                 "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
-                "get_headers": self._get_deepinfra_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -374,7 +378,7 @@ class ProviderManager:
             "deepinfra_qwen3_32b": {
                 "url": self.DEEPINFRA_URL,
                 "model": "Qwen/Qwen3-32B",
-                "get_headers": self._get_deepinfra_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
                 "max_tokens": 800,
                 "timeout": 7
@@ -382,8 +386,20 @@ class ProviderManager:
             "deepinfra_deepseek_r1_0528": {
                 "url": self.DEEPINFRA_URL,
                 "model": "deepseek-ai/DeepSeek-R1-0528",
-                "get_headers": self._get_deepinfra_headers,
+                "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+        }
+
+    def _get_moonshot_providers(self):
+        return {
+            "moonshot": {
+                "url": self.MOONSHOT_URL,
+                "model": "moonshot-v1-8k",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: moonshot_api_key,
                 "max_tokens": 800,
                 "timeout": 7
             },
@@ -398,14 +414,8 @@ class ProviderManager:
             "X-Title": OPENROUTER_TITLE
         }
 
-    def _get_cerebras_headers(self, key):
-        """Headers estándar para Cerebras"""
-        return {
-            "Authorization": f"Bearer {key}",
-            "Content-Type": CONTENT_TYPE_JSON
-        }
-
-    def _get_deepinfra_headers(self, key):
+    def _get_bearer_headers(self, key):
+        """Headers estándar para proveedores tipo Bearer"""
         return {
             "Authorization": f"Bearer {key}",
             "Content-Type": CONTENT_TYPE_JSON
@@ -443,6 +453,9 @@ class ProviderManager:
                 "deepinfra_qwen3_32b",
                 "deepinfra_deepseek_r1_0528"
             ])
+        if moonshot_api_key:
+            available.append("moonshot")
+
         return available
 
     def select_random_provider(self):
@@ -592,6 +605,8 @@ class ResponseGenerator:
             # Determinar el tipo de proveedor y procesar la respuesta
             if provider_name in ["gemini_20", "gemini_25"]:
                 return self._handle_gemini_request(provider, key, chat_history, new_question, provider_name)
+            elif provider_name == "moonshot":
+                return self._handle_moonshot_request(provider, key, chat_history, new_question, provider_name)
             else:
                 return self._handle_standard_request(provider, key, chat_history, new_question, provider_name)
 
@@ -661,6 +676,29 @@ class ResponseGenerator:
         data = self._build_request_data(provider, model, messages, provider_name)
 
         logger.info(f"Enviando request a {provider_name} con modelo {model}")
+        response = requests.post(url, headers=headers, data=json.dumps(data), timeout=timeout)
+        return self._process_standard_response(response, provider_name)
+
+    def _handle_moonshot_request(self, provider, key, chat_history, new_question, provider_name):
+        """Maneja las peticiones específicas para Moonshot"""
+        headers = provider["get_headers"](key)
+        url = provider["url"]
+        model = provider["model"]
+        timeout = provider.get("timeout", 8)
+
+        messages = [{"role": "system", "content": self._get_system_prompt()}]
+        for question, answer in chat_history[-6:]:
+            messages.append({"role": "user", "content": question})
+            messages.append({"role": "assistant", "content": answer})
+        messages.append({"role": "user", "content": new_question})
+
+        data = {
+            "model": model,
+            "messages": messages,
+            "temperature": 0.8,
+            "max_tokens": provider.get("max_tokens", 800)
+        }
+        logger.info(f"Enviando request a Moonshot: {provider_name}")
         response = requests.post(url, headers=headers, data=json.dumps(data), timeout=timeout)
         return self._process_standard_response(response, provider_name)
 

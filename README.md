@@ -12,26 +12,50 @@ Skill de Amazon Alexa para interactuar con múltiples modelos avanzados de IA co
 
 ## 🤖 Proveedores y Modelos Soportados
 
-La skill soporta decenas de modelos de IA, incluyendo:
+La skill soporta decenas de modelos de IA conversacional. Puedes forzar el uso de cualquier modelo usando su nombre de proveedor (provider key) en la variable `FORCED_PROVIDER` de `config.py`.
 
-- **OpenAI**: gpt-4.1-mini
-- **GitHub Models**: openai/gpt-4.1-mini vía GitHub
-- **OpenRouter** (requiere API key):
-  - meta-llama/llama-4-maverick (premium y free)
-  - deepseek/deepseek-r1, deepseek-r1:free, deepseek-r1-distill-llama-70b:free
-  - tngtech/deepseek-r1t-chimera:free
-  - qwen/qwen3-235b-a22b:free, qwen/qwq-32b:free
-  - microsoft/mai-ds-r1:free
-  - deepseek/deepseek-chat-v3-0324, deepseek-chat-v3-0324:free
-  - openai/gpt-4.1-mini (vía OpenRouter)
-  - google/gemini-2.0-flash-001, google/gemini-2.5-flash-preview-05-20
-- **Cerebras** (requiere API key):
-  - llama-4-scout-17b-16e-instruct
-  - llama-3.3-70b
-  - qwen-3-32b
-  - deepseek-r1-distill-llama-70b
+**Lista de modelos y nombres de proveedor (actualizada a mayo 2025):**
 
-Consulta `lambda_function.py` para la lista completa y actualizada de modelos soportados.
+| Proveedor      | Provider Key (FORCED_PROVIDER)                | Modelo (model)                                      |
+|---------------|-----------------------------------------------|-----------------------------------------------------|
+| **OpenAI**    | `openai`                                      | gpt-4.1-mini                                        |
+| **GitHub**    | `github`                                      | openai/gpt-4.1-mini                                 |
+| **Gemini**    | `gemini_20`                                   | gemini-2.0-flash                                    |
+| (Google)      | `gemini_25`                                   | gemini-2.5-flash-preview-05-20                      |
+| **OpenRouter**| `openrouter`                                  | meta-llama/llama-4-maverick                         |
+|               | `openrouter_llama_maverick`                   | meta-llama/llama-4-maverick:free                    |
+|               | `openrouter_deepseek_r1`                      | deepseek/deepseek-r1                                |
+|               | `openrouter_deepseek_r1_free`                 | deepseek/deepseek-r1:free                           |
+|               | `openrouter_deepseek_r1_distill_llama_70b`    | deepseek/deepseek-r1-distill-llama-70b:free         |
+|               | `openrouter_deepseek_r1_0528`                 | deepseek/deepseek-r1-0528                           |
+|               | `openrouter_deepseek_r1_0528_free`            | deepseek/deepseek-r1-0528:free                      |
+|               | `openrouter_deepseek_chimera`                 | tngtech/deepseek-r1t-chimera:free                   |
+|               | `openrouter_qwen3_235b`                       | qwen/qwen3-235b-a22b                                |
+|               | `openrouter_qwen3_235b_free`                  | qwen/qwen3-235b-a22b:free                           |
+|               | `openrouter_qwen_qwq`                         | qwen/qwq-32b                                        |
+|               | `openrouter_qwen_qwq_free`                    | qwen/qwq-32b:free                                   |
+|               | `openrouter_microsoft_mai`                    | microsoft/mai-ds-r1:free                            |
+|               | `openrouter_deepseek_chat_v3`                 | deepseek/deepseek-chat-v3-0324                      |
+|               | `openrouter_deepseek_chat_v3_free`            | deepseek/deepseek-chat-v3-0324:free                 |
+|               | `openrouter_openai_gpt41_mini`                | openai/gpt-4.1-mini                                 |
+|               | `openrouter_google_gemini_20`                 | google/gemini-2.0-flash-001                         |
+|               | `openrouter_google_gemini_25`                 | google/gemini-2.5-flash-preview-05-20               |
+| **Cerebras**  | `cerebras`                                    | llama-4-scout-17b-16e-instruct                      |
+|               | `cerebras_llama4_scout`                       | llama-4-scout-17b-16e-instruct                      |
+|               | `cerebras_llama33_70b`                        | llama-3.3-70b                                       |
+|               | `cerebras_qwen3_32b`                          | qwen-3-32b                                          |
+|               | `cerebras_deepseek_r1_distill_llama_70b`      | deepseek-r1-distill-llama-70b                       |
+| **DeepInfra** | `deepinfra_deepseek_v3`                       | deepseek-ai/DeepSeek-V3-0324                        |
+|               | `deepinfra_qwen_qwq_32b`                      | Qwen/QwQ-32B                                        |
+|               | `deepinfra_deepseek_r1`                       | deepseek-ai/DeepSeek-R1                             |
+|               | `deepinfra_llama4_maverick`                   | meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8   |
+|               | `deepinfra_qwen3_32b`                         | Qwen/Qwen3-32B                                      |
+|               | `deepinfra_deepseek_r1_0528`                  | deepseek-ai/DeepSeek-R1-0528                        |
+| **Moonshot**  | `moonshot`                                    | moonshot-v1-8k                                      |
+
+> **Nota:** El nombre de proveedor (provider key) es el que debes usar en `FORCED_PROVIDER` si quieres forzar un modelo específico.
+
+Consulta siempre `lambda/lambda_function.py` para la lista más actualizada de modelos soportados y sus nombres.
 
 ## 🔑 Configuración de API Keys
 
