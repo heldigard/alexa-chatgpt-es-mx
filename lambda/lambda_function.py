@@ -345,14 +345,6 @@ class ProviderManager:
                 "max_tokens": 800,
                 "timeout": 7
             },
-            "openrouter_openai_gpt41_mini": {
-                "url": self.OPENROUTER_URL,
-                "model": "openai/gpt-4.1-mini",
-                "get_headers": self._get_openrouter_headers,
-                "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
-            },
             "openrouter_google_gemini_20": {
                 "url": self.OPENROUTER_URL,
                 "model": "google/gemini-2.0-flash-001",
@@ -364,6 +356,62 @@ class ProviderManager:
             "openrouter_google_gemini_25": {
                 "url": self.OPENROUTER_URL,
                 "model": "google/gemini-2.5-flash-preview-05-20",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openrouter_openai_gpt41_mini": {
+                "url": self.OPENROUTER_URL,
+                "model": "openai/gpt-4.1-mini",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openrouter_openai_gpt4o_mini": {
+                "url": self.OPENROUTER_URL,
+                "model": "openai/gpt-4o-mini",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openrouter_openai_o4_mini": {
+                "url": self.OPENROUTER_URL,
+                "model": "openai/o4-mini",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openrouter_openai_o3_mini": {
+                "url": self.OPENROUTER_URL,
+                "model": "openai/o3-mini",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openrouter_nvidia_llama31_nemotron_ultra_253b_free": {
+                "url": self.OPENROUTER_URL,
+                "model": "nvidia/llama-3.1-nemotron-ultra-253b-v1:free",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openrouter_meta_llama33_70b_instruct_free": {
+                "url": self.OPENROUTER_URL,
+                "model": "meta-llama/llama-3.3-70b-instruct:free",
+                "get_headers": self._get_openrouter_headers,
+                "get_key": lambda: openrouter_api_key,
+                "max_tokens": 800,
+                "timeout": 7
+            },
+            "openrouter_meta_llama31_405b_free": {
+                "url": self.OPENROUTER_URL,
+                "model": "meta-llama/llama-3.1-405b:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
@@ -540,10 +588,18 @@ class ProviderManager:
 
                 # Modelos OpenAI vía OpenRouter
                 "openrouter_openai_gpt41_mini",  # openai/gpt-4.1-mini
+                "openrouter_openai_gpt4o_mini",  # openai/gpt-4o-mini
+                "openrouter_openai_o4_mini",  # openai/o4-mini
+                "openrouter_openai_o3_mini",  # openai/o3-mini
 
                 # Modelos Google Gemini vía OpenRouter
                 "openrouter_google_gemini_20",  # google/gemini-2.0-flash-001
                 "openrouter_google_gemini_25",  # google/gemini-2.5-flash-preview-05-20
+
+                # Modelos NVIDIA y Meta nuevos
+                "openrouter_nvidia_llama31_nemotron_ultra_253b_free",  # nvidia/llama-3.1-nemotron-ultra-253b-v1:free
+                "openrouter_meta_llama33_70b_instruct_free",  # meta-llama/llama-3.3-70b-instruct:free
+                "openrouter_meta_llama31_405b_free",  # meta-llama/llama-3.1-405b:free
             ])
         if is_valid_key(gemini_api_key):
             available.extend(["gemini_20", "gemini_25"])

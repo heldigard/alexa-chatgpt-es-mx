@@ -36,16 +36,22 @@ La skill soporta decenas de modelos de IA conversacional. Puedes forzar el uso d
 |               | `openrouter_deepseek_r1_0528`                 | deepseek/deepseek-r1-0528                           |
 |               | `openrouter_deepseek_r1_0528_free`            | deepseek/deepseek-r1-0528:free                      |
 |               | `openrouter_deepseek_chimera`                 | tngtech/deepseek-r1t-chimera:free                   |
+|               | `openrouter_deepseek_chat_v3`                 | deepseek/deepseek-chat-v3-0324                      |
+|               | `openrouter_deepseek_chat_v3_free`            | deepseek/deepseek-chat-v3-0324:free                 |
 |               | `openrouter_qwen3_235b`                       | qwen/qwen3-235b-a22b                                |
 |               | `openrouter_qwen3_235b_free`                  | qwen/qwen3-235b-a22b:free                           |
 |               | `openrouter_qwen_qwq`                         | qwen/qwq-32b                                        |
 |               | `openrouter_qwen_qwq_free`                    | qwen/qwq-32b:free                                   |
 |               | `openrouter_microsoft_mai`                    | microsoft/mai-ds-r1:free                            |
-|               | `openrouter_deepseek_chat_v3`                 | deepseek/deepseek-chat-v3-0324                      |
-|               | `openrouter_deepseek_chat_v3_free`            | deepseek/deepseek-chat-v3-0324:free                 |
 |               | `openrouter_openai_gpt41_mini`                | openai/gpt-4.1-mini                                 |
+|               | `openrouter_openai_gpt4o_mini`                | openai/gpt-4o-mini                                  |
+|               | `openrouter_openai_o4_mini`                   | openai/o4-mini                                      |
+|               | `openrouter_openai_o3_mini`                   | openai/o3-mini                                      |
 |               | `openrouter_google_gemini_20`                 | google/gemini-2.0-flash-001                         |
 |               | `openrouter_google_gemini_25`                 | google/gemini-2.5-flash-preview-05-20               |
+|               | `openrouter_nvidia_llama31_nemotron_ultra_253b_free` | nvidia/llama-3.1-nemotron-ultra-253b-v1:free |
+|               | `openrouter_meta_llama33_70b_instruct_free`   | meta-llama/llama-3.3-70b-instruct:free              |
+|               | `openrouter_meta_llama31_405b_free`           | meta-llama/llama-3.1-405b:free                      |
 | **Cerebras**  | `cerebras`                                    | llama-4-scout-17b-16e-instruct                      |
 |               | `cerebras_llama4_scout`                       | llama-4-scout-17b-16e-instruct                      |
 |               | `cerebras_llama33_70b`                        | llama-3.3-70b                                       |
