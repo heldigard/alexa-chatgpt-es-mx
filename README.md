@@ -66,6 +66,8 @@ Consulta siempre `lambda/lambda_function.py` para la lista más actualizada de m
 ## 🔑 Configuración de API Keys
 
 > **Nota:** Si no configuras al menos una API key válida, la skill no funcionará.
+> 
+> **Importante:** Si dejas el valor por defecto (por ejemplo, `"OPENAI_API_KEY"`, `""` o similar) en alguna de las variables `API_KEY`, `GITHUB_TOKEN`, `OPENROUTER_API_KEY` o `CEREBRAS_API_KEY` en `lambda/config.py`, los modelos de ese proveedor NO estarán disponibles para la skill. Solo se consideran los proveedores cuya clave ha sido configurada correctamente.
 
 Coloca tus claves en las variables `API_KEY`, `GITHUB_TOKEN`, `OPENROUTER_API_KEY` y/o `CEREBRAS_API_KEY` según los proveedores que quieras usar.
 

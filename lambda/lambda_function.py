@@ -50,6 +50,14 @@ deepinfra_api_key = DEEPINFRA_API_KEY
 deepseek_api_key = DEEPSEEK_API_KEY
 moonshot_api_key = MOONSHOT_API_KEY
 
+def is_valid_key(key):
+    """Valida si una API_KEY es válida: no None, no vacía, no termina en API_KEY o TOKEN"""
+    if key is None or key == '':
+        return False
+    if isinstance(key, str) and (key.strip().endswith('API_KEY') or key.strip().endswith('TOKEN')):
+        return False
+    return True
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -488,26 +496,24 @@ class ProviderManager:
         }
 
     def _get_available_providers(self):
-        """Determina qué proveedores están disponibles basado en las API keys"""
+        """Determina qué proveedores están disponibles basado en las API keys válidas"""
         available = []
-
-        if api_key:
+        # Solo agregar si la key es válida (no es None, vacía, ni valor por defecto)
+        if is_valid_key(api_key):
             available.extend([
                 "openai",
                 "openai_gpt4o_mini",
                 "openai_o4_mini",
                 "openai_o3_mini"
             ])
-        if github_token:
+        if is_valid_key(github_token):
             available.extend([
                 "github",
                 "github_openai_o4_mini",
                 "github_openai_o3_mini",
                 "github_openai_gpt4o_mini"
             ])
-        if openrouter_api_key:
-            # Agregar OpenRouter original y todos los modelos gratuitos con prefijo 'openrouter_'
-            # Organización por familias de modelos para mayor claridad
+        if is_valid_key(openrouter_api_key):
             available.extend([
                 # Modelos Llama
                 "openrouter",  # meta-llama/llama-4-maverick
@@ -539,9 +545,9 @@ class ProviderManager:
                 "openrouter_google_gemini_20",  # google/gemini-2.0-flash-001
                 "openrouter_google_gemini_25",  # google/gemini-2.5-flash-preview-05-20
             ])
-        if gemini_api_key:
+        if is_valid_key(gemini_api_key):
             available.extend(["gemini_20", "gemini_25"])
-        if cerebras_api_key:
+        if is_valid_key(cerebras_api_key):
             available.extend([
                 "cerebras",
                 "cerebras_llama4_scout",
@@ -549,7 +555,7 @@ class ProviderManager:
                 "cerebras_qwen3_32b",
                 "cerebras_deepseek_r1_distill_llama_70b"
             ])
-        if deepinfra_api_key:
+        if is_valid_key(deepinfra_api_key):
             available.extend([
                 "deepinfra_deepseek_v3",
                 "deepinfra_qwen_qwq_32b",
@@ -558,7 +564,7 @@ class ProviderManager:
                 "deepinfra_qwen3_32b",
                 "deepinfra_deepseek_r1_0528"
             ])
-        if moonshot_api_key:
+        if is_valid_key(moonshot_api_key):
             available.append("moonshot")
 
         return available
