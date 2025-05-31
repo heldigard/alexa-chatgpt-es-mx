@@ -949,6 +949,11 @@ class CatchAllExceptionHandler(AbstractExceptionHandler):
 
     def handle(self, handler_input, exception):
         logger.error(f"Error global capturado: {str(exception)}", exc_info=True)
+        # Registrar la solicitud que causó el error de despacho
+        try:
+            logger.error(f"Solicitud causando error de despacho: {json.dumps(handler_input.request_envelope.to_dict())}")
+        except Exception as e:
+            logger.error(f"Error registrando el envelope de la solicitud: {str(e)}")
 
         # Respuestas de error más específicas según el tipo de excepción
         if "timeout" in str(exception).lower():
@@ -1033,6 +1038,31 @@ class NewTopicIntentHandler(AbstractRequestHandler):
                 .response
         )
 
+class FallbackIntentHandler(AbstractRequestHandler):
+    """Handler for Fallback Intent.
+
+    AMAZON.FallbackIntent is only available in en-US locale.
+    This handler will not be triggered except in that locale,
+    so it is safe to deploy on any locale.
+    """
+    def can_handle(self, handler_input):
+        # type: (HandlerInput) -> bool
+        return ask_utils.is_intent_name("AMAZON.FallbackIntent")(handler_input)
+
+    def handle(self, handler_input):
+        # type: (HandlerInput) -> Response
+        logger.info("In FallbackIntentHandler")
+        speak_output = ("Lo siento, no entendí eso. Puedes pedirme ayuda o "
+                        "intentar tu pregunta de otra manera.")
+        reprompt = random.choice(reprompts) # Usando tus reprompts existentes
+
+        return (
+            handler_input.response_builder
+                .speak(speak_output)
+                .ask(reprompt)
+                .response
+        )
+
 class SessionEndedRequestHandler(AbstractRequestHandler):
     """Handler for Session End."""
     def can_handle(self, handler_input):
@@ -1040,12 +1070,16 @@ class SessionEndedRequestHandler(AbstractRequestHandler):
         return ask_utils.is_request_type("SessionEndedRequest")(handler_input)
 
     def handle(self, handler_input):
-        # type: (HandlerInput) -> None
+        # type: (HandlerInput) -> Response
         session_attr = handler_input.attributes_manager.session_attributes
         current_provider = session_attr.get("current_provider", "unknown")
+        reason = "Desconocida"
+        if handler_input.request_envelope.request and hasattr(handler_input.request_envelope.request, 'reason'):
+            reason = handler_input.request_envelope.request.reason
 
-        logger.info(f"Sesión terminada. Proveedor usado: {current_provider}")
-        return None
+        logger.info(f"Sesión terminada. Proveedor usado: {current_provider}. Razón: {reason}")
+        # El SDK espera un objeto Response, incluso si está vacío para SessionEndedRequest
+        return handler_input.response_builder.response
 
 # =====================================================================
 # CONFIGURACIÓN DE LA SKILL Y LAMBDA HANDLER
@@ -1058,6 +1092,7 @@ sb.add_request_handler(GptQueryIntentHandler())
 sb.add_request_handler(CancelOrStopIntentHandler())
 sb.add_request_handler(HelpIntentHandler())
 sb.add_request_handler(NewTopicIntentHandler())
+sb.add_request_handler(FallbackIntentHandler())
 sb.add_request_handler(SessionEndedRequestHandler())
 sb.add_exception_handler(CatchAllExceptionHandler())
 
