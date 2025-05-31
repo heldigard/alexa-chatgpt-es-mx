@@ -630,77 +630,70 @@ class ResponseGenerator:
         """Valida que la API key esté configurada"""
         return key and key != "YOUR_API_KEY"
 
+    def _build_chat_history(self, chat_history, new_question, system_prompt=None, format_type="standard"):
+        """Construye el historial de chat en el formato requerido (standard o gemini)"""
+        if format_type == "gemini":
+            contents = []
+            if system_prompt:
+                contents.append({"role": "user", "parts": [{"text": system_prompt}]})
+            for question, answer in chat_history[-6:]:
+                contents.append({"role": "user", "parts": [{"text": question}]})
+                contents.append({"role": "model", "parts": [{"text": answer}]})
+            contents.append({"role": "user", "parts": [{"text": new_question}]})
+            return contents
+        else:
+            messages = []
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            for question, answer in chat_history[-6:]:
+                messages.append({"role": "user", "content": question})
+                messages.append({"role": "assistant", "content": answer})
+            messages.append({"role": "user", "content": new_question})
+            return messages
+
     def _handle_gemini_request(self, provider, key, chat_history, new_question, provider_name):
         """Maneja las peticiones específicas para Gemini (Google API directo)"""
         headers = provider["get_headers"](key)
         url = f"{provider['url']}?key={key}"
         timeout = provider.get("timeout", 8)
-
-        # Construir el prompt para Gemini
         system_prompt = self._get_system_prompt()
-        contents = []
-
-        if system_prompt:
-            contents.append({"role": "user", "parts": [{"text": system_prompt}]})
-
-        # Historial (últimas 6 interacciones)
-        for question, answer in chat_history[-6:]:
-            contents.append({"role": "user", "parts": [{"text": question}]})
-            contents.append({"role": "model", "parts": [{"text": answer}]})
-
-        contents.append({"role": "user", "parts": [{"text": new_question}]})
-
+        contents = self._build_chat_history(chat_history, new_question, system_prompt, format_type="gemini")
         data = {"contents": contents}
         logger.info(f"Enviando request a Gemini directo: {provider_name}")
-
         response = requests.post(url, headers=headers, data=json.dumps(data), timeout=timeout)
         return self._process_gemini_response(response, provider_name)
 
-    def _handle_standard_request(self, provider, key, chat_history, new_question, provider_name):
-        """Maneja las peticiones estándar (OpenAI, OpenRouter, Cerebras, etc.)"""
+    def _send_standard_request(self, provider, key, messages, provider_name, custom_data=None):
+        """Envía una petición estándar (OpenAI, OpenRouter, Cerebras, Moonshot, etc.)"""
         headers = provider["get_headers"](key)
         url = provider["url"]
         model = provider["model"]
         timeout = provider.get("timeout", 8)
-
-        # Crear mensajes optimizados para español
-        messages = [{"role": "system", "content": self._get_system_prompt()}]
-
-        # Agregar historial reciente (máximo 6 intercambios para optimizar tokens)
-        for question, answer in chat_history[-6:]:
-            messages.append({"role": "user", "content": question})
-            messages.append({"role": "assistant", "content": answer})
-
-        messages.append({"role": "user", "content": new_question})
-
-        data = self._build_request_data(provider, model, messages, provider_name)
-
+        if custom_data is not None:
+            data = custom_data
+        else:
+            data = self._build_request_data(provider, model, messages, provider_name)
         logger.info(f"Enviando request a {provider_name} con modelo {model}")
         response = requests.post(url, headers=headers, data=json.dumps(data), timeout=timeout)
         return self._process_standard_response(response, provider_name)
 
+    def _handle_standard_request(self, provider, key, chat_history, new_question, provider_name):
+        """Maneja las peticiones estándar (OpenAI, OpenRouter, Cerebras, etc.)"""
+        system_prompt = self._get_system_prompt()
+        messages = self._build_chat_history(chat_history, new_question, system_prompt, format_type="standard")
+        return self._send_standard_request(provider, key, messages, provider_name)
+
     def _handle_moonshot_request(self, provider, key, chat_history, new_question, provider_name):
         """Maneja las peticiones específicas para Moonshot"""
-        headers = provider["get_headers"](key)
-        url = provider["url"]
-        model = provider["model"]
-        timeout = provider.get("timeout", 8)
-
-        messages = [{"role": "system", "content": self._get_system_prompt()}]
-        for question, answer in chat_history[-6:]:
-            messages.append({"role": "user", "content": question})
-            messages.append({"role": "assistant", "content": answer})
-        messages.append({"role": "user", "content": new_question})
-
-        data = {
-            "model": model,
+        system_prompt = self._get_system_prompt()
+        messages = self._build_chat_history(chat_history, new_question, system_prompt, format_type="standard")
+        custom_data = {
+            "model": provider["model"],
             "messages": messages,
             "temperature": 0.8,
             "max_tokens": provider.get("max_tokens", 800)
         }
-        logger.info(f"Enviando request a Moonshot: {provider_name}")
-        response = requests.post(url, headers=headers, data=json.dumps(data), timeout=timeout)
-        return self._process_standard_response(response, provider_name)
+        return self._send_standard_request(provider, key, messages, provider_name, custom_data=custom_data)
 
     def _get_system_prompt(self):
         """Genera el prompt del sistema optimizado para conversaciones en español"""
