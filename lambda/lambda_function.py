@@ -233,14 +233,6 @@ class ProviderManager:
                 "max_tokens": 800,
                 "timeout": 7
             },
-            "openrouter_deepseek_r1_distill_llama_70b": {
-                "url": self.OPENROUTER_URL,
-                "model": "deepseek/deepseek-r1-distill-llama-70b:free",
-                "get_headers": self._get_openrouter_headers,
-                "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
-            },
             "openrouter_deepseek_r1": {
                 "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1",
@@ -380,14 +372,6 @@ class ProviderManager:
             "openrouter_openai_o4_mini": {
                 "url": self.OPENROUTER_URL,
                 "model": "openai/o4-mini",
-                "get_headers": self._get_openrouter_headers,
-                "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
-            },
-            "openrouter_openai_o3_mini": {
-                "url": self.OPENROUTER_URL,
-                "model": "openai/o3-mini",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
                 "max_tokens": 800,
@@ -570,7 +554,6 @@ class ProviderManager:
                 # Modelos DeepSeek
                 "openrouter_deepseek_r1",  # deepseek/deepseek-r1
                 "openrouter_deepseek_r1_free",  # deepseek/deepseek-r1:free
-                "openrouter_deepseek_r1_distill_llama_70b",  # deepseek/deepseek-r1-distill-llama-70b:free
                 "openrouter_deepseek_r1_0528",  # deepseek/deepseek-r1-0528
                 "openrouter_deepseek_r1_0528_free",  # deepseek/deepseek-r1-0528:free
                 "openrouter_deepseek_chimera",  # tngtech/deepseek-r1t-chimera:free
@@ -590,7 +573,6 @@ class ProviderManager:
                 "openrouter_openai_gpt41_mini",  # openai/gpt-4.1-mini
                 "openrouter_openai_gpt4o_mini",  # openai/gpt-4o-mini
                 "openrouter_openai_o4_mini",  # openai/o4-mini
-                "openrouter_openai_o3_mini",  # openai/o3-mini
 
                 # Modelos Google Gemini vía OpenRouter
                 "openrouter_google_gemini_20",  # google/gemini-2.0-flash-001

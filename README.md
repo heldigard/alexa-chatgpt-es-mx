@@ -32,7 +32,6 @@ La skill soporta decenas de modelos de IA conversacional. Puedes forzar el uso d
 |               | `openrouter_llama_maverick`                   | meta-llama/llama-4-maverick:free                    |
 |               | `openrouter_deepseek_r1`                      | deepseek/deepseek-r1                                |
 |               | `openrouter_deepseek_r1_free`                 | deepseek/deepseek-r1:free                           |
-|               | `openrouter_deepseek_r1_distill_llama_70b`    | deepseek/deepseek-r1-distill-llama-70b:free         |
 |               | `openrouter_deepseek_r1_0528`                 | deepseek/deepseek-r1-0528                           |
 |               | `openrouter_deepseek_r1_0528_free`            | deepseek/deepseek-r1-0528:free                      |
 |               | `openrouter_deepseek_chimera`                 | tngtech/deepseek-r1t-chimera:free                   |
@@ -46,7 +45,6 @@ La skill soporta decenas de modelos de IA conversacional. Puedes forzar el uso d
 |               | `openrouter_openai_gpt41_mini`                | openai/gpt-4.1-mini                                 |
 |               | `openrouter_openai_gpt4o_mini`                | openai/gpt-4o-mini                                  |
 |               | `openrouter_openai_o4_mini`                   | openai/o4-mini                                      |
-|               | `openrouter_openai_o3_mini`                   | openai/o3-mini                                      |
 |               | `openrouter_google_gemini_20`                 | google/gemini-2.0-flash-001                         |
 |               | `openrouter_google_gemini_25`                 | google/gemini-2.5-flash-preview-05-20               |
 |               | `openrouter_nvidia_llama31_nemotron_ultra_253b_free` | nvidia/llama-3.1-nemotron-ultra-253b-v1:free |
