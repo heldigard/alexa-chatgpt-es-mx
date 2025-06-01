@@ -9,6 +9,7 @@ CEREBRAS_API_KEY = 'CEREBRAS_API_KEY'
 GEMINI_API_KEY = 'GEMINI_API_KEY'
 DEEPINFRA_API_KEY = 'DEEPINFRA_API_KEY'
 MOONSHOT_API_KEY = 'MOONSHOT_API_KEY'
+CHUTES_API_KEY = 'CHUTES_API_KEY'
 
 # Puedes forzar el proveedor deseado aquí, por ejemplo: 'openai', 'cerebras_llama4_scout', 'deepseek_chat', etc.
 FORCED_PROVIDER = None  # Ejemplo: 'openai', 'cerebras_llama4_scout', 'deepseek_chat', etc.

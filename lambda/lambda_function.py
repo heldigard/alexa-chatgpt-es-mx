@@ -10,7 +10,7 @@ import json
 import random
 import os
 import re
-from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE, DEEPINFRA_API_KEY, DEEPSEEK_API_KEY, MOONSHOT_API_KEY
+from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE, DEEPINFRA_API_KEY, DEEPSEEK_API_KEY, MOONSHOT_API_KEY, CHUTES_API_KEY
 
 # =====================================================================
 # CONFIGURACIÓN Y CONSTANTES GLOBALES
@@ -49,6 +49,7 @@ gemini_api_key = GEMINI_API_KEY
 deepinfra_api_key = DEEPINFRA_API_KEY
 deepseek_api_key = DEEPSEEK_API_KEY
 moonshot_api_key = MOONSHOT_API_KEY
+chutes_api_key = CHUTES_API_KEY
 
 def is_valid_key(key):
     """Valida si una API_KEY es válida: no None, no vacía, no termina en API_KEY o TOKEN"""
@@ -77,6 +78,7 @@ class ProviderManager:
     DEEPINFRA_URL = "https://api.deepinfra.com/v1/openai/chat/completions"
     OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
     MOONSHOT_URL = "https://api.moonshot.cn/v1/chat/completions"
+    CHUTES_URL = "https://llm.chutes.ai/v1/chat/completions"
 
     def __init__(self):
         self.providers = self._configure_providers()
@@ -98,6 +100,7 @@ class ProviderManager:
         providers.update(self._get_cerebras_providers())
         providers.update(self._get_deepinfra_providers())
         providers.update(self._get_moonshot_providers())
+        providers.update(self._get_chutes_providers())
         return providers
 
     def _get_gemini_providers(self):
@@ -499,6 +502,66 @@ class ProviderManager:
             },
         }
 
+    def _get_chutes_providers(self):
+        return {
+            "chutes_deepseek_r1_0528": {
+                "url": self.CHUTES_URL,
+                "model": "deepseek-ai/DeepSeek-R1-0528",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: chutes_api_key,
+                "max_tokens": 1024,
+                "timeout": 8
+            },
+            "chutes_deepseek_r1": {
+                "url": self.CHUTES_URL,
+                "model": "deepseek-ai/DeepSeek-R1",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: chutes_api_key,
+                "max_tokens": 1024,
+                "timeout": 8
+            },
+            "chutes_deepseek_v3": {
+                "url": self.CHUTES_URL,
+                "model": "deepseek-ai/DeepSeek-V3-0324",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: chutes_api_key,
+                "max_tokens": 1024,
+                "timeout": 8
+            },
+            "chutes_deepseek_chimera": {
+                "url": self.CHUTES_URL,
+                "model": "tngtech/DeepSeek-R1T-Chimera",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: chutes_api_key,
+                "max_tokens": 1024,
+                "timeout": 8
+            },
+            "chutes_qwen3_235b": {
+                "url": self.CHUTES_URL,
+                "model": "Qwen/Qwen3-235B-A22B",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: chutes_api_key,
+                "max_tokens": 1024,
+                "timeout": 8
+            },
+            "chutes_microsoft_mai": {
+                "url": self.CHUTES_URL,
+                "model": "microsoft/MAI-DS-R1-FP8",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: chutes_api_key,
+                "max_tokens": 1024,
+                "timeout": 8
+            },
+            "chutes_glm4_32b": {
+                "url": self.CHUTES_URL,
+                "model": "THUDM/GLM-4-32B-0414",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: chutes_api_key,
+                "max_tokens": 1024,
+                "timeout": 8
+            },
+        }
+
     def _get_moonshot_providers(self):
         return {
             "moonshot": {
@@ -563,7 +626,6 @@ class ProviderManager:
                 # Modelos Qwen
                 "openrouter_qwen3_235b",  # qwen/qwen3-235b-a22b
                 "openrouter_qwen3_235b_free",  # qwen/qwen3-235b-a22b:free
-                "openrouter_qwen_qwq",  # qwen/qwq-32b
                 "openrouter_qwen_qwq_free",  # qwen/qwq-32b:free
 
                 # Modelos Microsoft
@@ -604,6 +666,16 @@ class ProviderManager:
             ])
         if is_valid_key(moonshot_api_key):
             available.append("moonshot")
+        if is_valid_key(CHUTES_API_KEY):
+            available.extend([
+                "chutes_deepseek_r1_0528",
+                "chutes_deepseek_r1",
+                "chutes_deepseek_v3",
+                "chutes_deepseek_chimera",
+                "chutes_qwen3_235b",
+                "chutes_microsoft_mai",
+                "chutes_glm4_32b"
+            ])
 
         return available
 
@@ -754,8 +826,8 @@ class ResponseGenerator:
             # Determinar el tipo de proveedor y procesar la respuesta
             if provider_name in ["gemini_20", "gemini_25"]:
                 return self._handle_gemini_request(provider, key, chat_history, new_question, provider_name)
-            elif provider_name == "moonshot":
-                return self._handle_moonshot_request(provider, key, chat_history, new_question, provider_name)
+            elif provider_name == "moonshot" or provider_name.startswith("chutes"):
+                return self._handle_temperature_request(provider, key, chat_history, new_question, provider_name)
             else:
                 return self._handle_standard_request(provider, key, chat_history, new_question, provider_name)
 
@@ -832,7 +904,7 @@ class ResponseGenerator:
         messages = self._build_chat_history(chat_history, new_question, system_prompt, format_type="standard")
         return self._send_standard_request(provider, key, messages, provider_name)
 
-    def _handle_moonshot_request(self, provider, key, chat_history, new_question, provider_name):
+    def _handle_temperature_request(self, provider, key, chat_history, new_question, provider_name):
         """Maneja las peticiones específicas para Moonshot"""
         system_prompt = self._get_system_prompt()
         messages = self._build_chat_history(chat_history, new_question, system_prompt, format_type="standard")
@@ -876,6 +948,11 @@ Tu misión es ser un interlocutor conversador y útil: que la gente en {COUNTRY}
                 "seed": 0,
                 "top_p": 1,
                 "max_completion_tokens": data.pop("max_tokens", 800)
+            })
+        elif provider_name.startswith("chutes"):
+            data.update({
+                "stream": True,
+                "top_p": 0.9
             })
         elif any(provider_name.startswith(prefix) for prefix in ["openrouter", "deepseek", "qwen", "microsoft", "llama", "google"]):
             data.update({

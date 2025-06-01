@@ -61,7 +61,14 @@ La skill soporta decenas de modelos de IA conversacional. Puedes forzar el uso d
 |               | `deepinfra_llama4_maverick`                   | meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8   |
 |               | `deepinfra_qwen3_32b`                         | Qwen/Qwen3-32B                                      |
 |               | `deepinfra_deepseek_r1_0528`                  | deepseek-ai/DeepSeek-R1-0528                        |
-| **Moonshot**  | `moonshot`                                    | moonshot-v1-8k                                      |
+| **Chutes**   | `chutes_deepseek_r1_0528`                        | deepseek-ai/DeepSeek-R1-0528                        |
+|              | `chutes_deepseek_r1`                              | deepseek-ai/DeepSeek-R1                             |
+|              | `chutes_deepseek_v3`                              | deepseek-ai/DeepSeek-V3-0324                        |
+|              | `chutes_deepseek_chimera`                         | tngtech/DeepSeek-R1T-Chimera                        |
+|              | `chutes_qwen3_235b`                               | Qwen/Qwen3-235B-A22B                                |
+|              | `chutes_microsoft_mai`                            | microsoft/MAI-DS-R1-FP8                             |
+|              | `chutes_glm4_32b`                                 | THUDM/GLM-4-32B-0414                                |
+| **Moonshot**  | `moonshot`                                       | moonshot-v1-8k                                      |
 
 > **Nota:** El nombre de proveedor (provider key) es el que debes usar en `FORCED_PROVIDER` si quieres forzar un modelo específico.
 
