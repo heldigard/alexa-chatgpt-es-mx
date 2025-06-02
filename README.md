@@ -69,6 +69,10 @@ La skill soporta decenas de modelos de IA conversacional. Puedes forzar el uso d
 |              | `chutes_microsoft_mai`                            | microsoft/MAI-DS-R1-FP8                             |
 |              | `chutes_glm4_32b`                                 | THUDM/GLM-4-32B-0414                                |
 | **Moonshot**  | `moonshot`                                       | moonshot-v1-8k                                      |
+| **Groq**      | `groq_compound_beta`                         | compound-beta                                      |
+|               | `groq_compound_beta_mini`                    | compound-beta-mini                                 |
+|               | `groq_llama4_maverick`                        | meta-llama/llama-4-maverick-17b-128e-instruct     |
+|               | `groq_qwen_qwq_32b`                           | qwen-qwq-32b                                       |
 
 > **Nota:** El nombre de proveedor (provider key) es el que debes usar en `FORCED_PROVIDER` si quieres forzar un modelo específico.
 

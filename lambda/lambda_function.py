@@ -10,7 +10,7 @@ import json
 import random
 import os
 import re
-from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE, DEEPINFRA_API_KEY, DEEPSEEK_API_KEY, MOONSHOT_API_KEY, CHUTES_API_KEY
+from config import API_KEY, GITHUB_TOKEN, OPENROUTER_API_KEY, CEREBRAS_API_KEY, GEMINI_API_KEY, FORCED_PROVIDER, COUNTRY, TONE, DEEPINFRA_API_KEY, DEEPSEEK_API_KEY, MOONSHOT_API_KEY, CHUTES_API_KEY, GROQ_API_KEY
 
 # =====================================================================
 # CONFIGURACIÓN Y CONSTANTES GLOBALES
@@ -50,6 +50,10 @@ deepinfra_api_key = DEEPINFRA_API_KEY
 deepseek_api_key = DEEPSEEK_API_KEY
 moonshot_api_key = MOONSHOT_API_KEY
 chutes_api_key = CHUTES_API_KEY
+groq_api_key = GROQ_API_KEY
+
+DEFAULT_MAX_TOKENS = 800
+DEFAULT_TIMEOUT = 7
 
 def is_valid_key(key):
     """Valida si una API_KEY es válida: no None, no vacía, no termina en API_KEY o TOKEN"""
@@ -79,6 +83,7 @@ class ProviderManager:
     OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
     MOONSHOT_URL = "https://api.moonshot.cn/v1/chat/completions"
     CHUTES_URL = "https://llm.chutes.ai/v1/chat/completions"
+    GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
     def __init__(self):
         self.providers = self._configure_providers()
@@ -101,6 +106,7 @@ class ProviderManager:
         providers.update(self._get_deepinfra_providers())
         providers.update(self._get_moonshot_providers())
         providers.update(self._get_chutes_providers())
+        providers.update(self._get_groq_providers())
         return providers
 
     def _get_gemini_providers(self):
@@ -111,8 +117,8 @@ class ProviderManager:
                 "model": "gemini-2.0-flash",
                 "get_headers": lambda key: {"Content-Type": CONTENT_TYPE_JSON},
                 "get_key": lambda: gemini_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             # Gemini 2.5 Flash Preview (Google API directo, solo texto)
             "gemini_25": {
@@ -120,8 +126,8 @@ class ProviderManager:
                 "model": "gemini-2.5-flash-preview-05-20",
                 "get_headers": lambda key: {"Content-Type": CONTENT_TYPE_JSON},
                 "get_key": lambda: gemini_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
         }
 
@@ -135,8 +141,8 @@ class ProviderManager:
                     "Content-Type": CONTENT_TYPE_JSON
                 },
                 "get_key": lambda: api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openai_gpt4o_mini": {
                 "url": self.OPENAI_URL,
@@ -146,8 +152,8 @@ class ProviderManager:
                     "Content-Type": CONTENT_TYPE_JSON
                 },
                 "get_key": lambda: api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openai_o4_mini": {
                 "url": self.OPENAI_URL,
@@ -157,8 +163,8 @@ class ProviderManager:
                     "Content-Type": CONTENT_TYPE_JSON
                 },
                 "get_key": lambda: api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openai_o3_mini": {
                 "url": self.OPENAI_URL,
@@ -168,8 +174,8 @@ class ProviderManager:
                     "Content-Type": CONTENT_TYPE_JSON
                 },
                 "get_key": lambda: api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
         }
 
@@ -183,8 +189,8 @@ class ProviderManager:
                     "Content-Type": CONTENT_TYPE_JSON
                 },
                 "get_key": lambda: github_token,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "github_openai_o4_mini": {
                 "url": self.GITHUB_URL,
@@ -194,8 +200,8 @@ class ProviderManager:
                     "Content-Type": CONTENT_TYPE_JSON
                 },
                 "get_key": lambda: github_token,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "github_openai_o3_mini": {
                 "url": self.GITHUB_URL,
@@ -205,8 +211,8 @@ class ProviderManager:
                     "Content-Type": CONTENT_TYPE_JSON
                 },
                 "get_key": lambda: github_token,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "github_openai_gpt4o_mini": {
                 "url": self.GITHUB_URL,
@@ -216,8 +222,8 @@ class ProviderManager:
                     "Content-Type": CONTENT_TYPE_JSON
                 },
                 "get_key": lambda: github_token,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
         }
 
@@ -233,176 +239,176 @@ class ProviderManager:
                     "X-Title": OPENROUTER_TITLE
                 },
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_deepseek_r1": {
                 "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_deepseek_r1_free": {
                 "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_deepseek_r1_0528": {
                 "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1-0528",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_deepseek_r1_0528_free": {
                 "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-r1-0528:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_deepseek_chimera": {
                 "url": self.OPENROUTER_URL,
                 "model": "tngtech/deepseek-r1t-chimera:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_qwen3_235b_free": {
                 "url": self.OPENROUTER_URL,
                 "model": "qwen/qwen3-235b-a22b:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_qwen3_235b": {
                 "url": self.OPENROUTER_URL,
                 "model": "qwen/qwen3-235b-a22b",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_microsoft_mai": {
                 "url": self.OPENROUTER_URL,
                 "model": "microsoft/mai-ds-r1:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_llama_maverick": {
                 "url": self.OPENROUTER_URL,
                 "model": "meta-llama/llama-4-maverick:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_qwen_qwq_free": {
                 "url": self.OPENROUTER_URL,
                 "model": "qwen/qwq-32b:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_qwen_qwq": {
                 "url": self.OPENROUTER_URL,
                 "model": "qwen/qwq-32b",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_deepseek_chat_v3": {
                 "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-chat-v3-0324",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_deepseek_chat_v3_free": {
                 "url": self.OPENROUTER_URL,
                 "model": "deepseek/deepseek-chat-v3-0324:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_google_gemini_20": {
                 "url": self.OPENROUTER_URL,
                 "model": "google/gemini-2.0-flash-001",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_google_gemini_25": {
                 "url": self.OPENROUTER_URL,
                 "model": "google/gemini-2.5-flash-preview-05-20",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_openai_gpt41_mini": {
                 "url": self.OPENROUTER_URL,
                 "model": "openai/gpt-4.1-mini",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_openai_gpt4o_mini": {
                 "url": self.OPENROUTER_URL,
                 "model": "openai/gpt-4o-mini",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_openai_o4_mini": {
                 "url": self.OPENROUTER_URL,
                 "model": "openai/o4-mini",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_nvidia_llama31_nemotron_ultra_253b_free": {
                 "url": self.OPENROUTER_URL,
                 "model": "nvidia/llama-3.1-nemotron-ultra-253b-v1:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_meta_llama33_70b_instruct_free": {
                 "url": self.OPENROUTER_URL,
                 "model": "meta-llama/llama-3.3-70b-instruct:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "openrouter_meta_llama31_405b_free": {
                 "url": self.OPENROUTER_URL,
                 "model": "meta-llama/llama-3.1-405b:free",
                 "get_headers": self._get_openrouter_headers,
                 "get_key": lambda: openrouter_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
         }
 
@@ -413,40 +419,40 @@ class ProviderManager:
                 "model": "llama-4-scout-17b-16e-instruct",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "cerebras_llama4_scout": {
                 "url": self.CEREBRAS_URL,
                 "model": "llama-4-scout-17b-16e-instruct",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "cerebras_llama33_70b": {
                 "url": self.CEREBRAS_URL,
                 "model": "llama-3.3-70b",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "cerebras_qwen3_32b": {
                 "url": self.CEREBRAS_URL,
                 "model": "qwen-3-32b",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "cerebras_deepseek_r1_distill_llama_70b": {
                 "url": self.CEREBRAS_URL,
                 "model": "deepseek-r1-distill-llama-70b",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: cerebras_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
         }
 
@@ -457,48 +463,48 @@ class ProviderManager:
                 "model": "deepseek-ai/DeepSeek-V3-0324",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "deepinfra_qwen_qwq_32b": {
                 "url": self.DEEPINFRA_URL,
                 "model": "Qwen/QwQ-32B",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "deepinfra_deepseek_r1": {
                 "url": self.DEEPINFRA_URL,
                 "model": "deepseek-ai/DeepSeek-R1",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "deepinfra_llama4_maverick": {
                 "url": self.DEEPINFRA_URL,
                 "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "deepinfra_qwen3_32b": {
                 "url": self.DEEPINFRA_URL,
                 "model": "Qwen/Qwen3-32B",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "deepinfra_deepseek_r1_0528": {
                 "url": self.DEEPINFRA_URL,
                 "model": "deepseek-ai/DeepSeek-R1-0528",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: deepinfra_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
         }
 
@@ -509,56 +515,56 @@ class ProviderManager:
                 "model": "deepseek-ai/DeepSeek-R1-0528",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: chutes_api_key,
-                "max_tokens": 1024,
-                "timeout": 8
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "chutes_deepseek_r1": {
                 "url": self.CHUTES_URL,
                 "model": "deepseek-ai/DeepSeek-R1",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: chutes_api_key,
-                "max_tokens": 1024,
-                "timeout": 8
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "chutes_deepseek_v3": {
                 "url": self.CHUTES_URL,
                 "model": "deepseek-ai/DeepSeek-V3-0324",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: chutes_api_key,
-                "max_tokens": 1024,
-                "timeout": 8
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "chutes_deepseek_chimera": {
                 "url": self.CHUTES_URL,
                 "model": "tngtech/DeepSeek-R1T-Chimera",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: chutes_api_key,
-                "max_tokens": 1024,
-                "timeout": 8
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "chutes_qwen3_235b": {
                 "url": self.CHUTES_URL,
                 "model": "Qwen/Qwen3-235B-A22B",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: chutes_api_key,
-                "max_tokens": 1024,
-                "timeout": 8
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "chutes_microsoft_mai": {
                 "url": self.CHUTES_URL,
                 "model": "microsoft/MAI-DS-R1-FP8",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: chutes_api_key,
-                "max_tokens": 1024,
-                "timeout": 8
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
             "chutes_glm4_32b": {
                 "url": self.CHUTES_URL,
                 "model": "THUDM/GLM-4-32B-0414",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: chutes_api_key,
-                "max_tokens": 1024,
-                "timeout": 8
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
         }
 
@@ -569,8 +575,48 @@ class ProviderManager:
                 "model": "moonshot-v1-8k",
                 "get_headers": self._get_bearer_headers,
                 "get_key": lambda: moonshot_api_key,
-                "max_tokens": 800,
-                "timeout": 7
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
+            },
+        }
+
+    def _get_groq_providers(self):
+        return {
+            # Compound Beta (Groq)
+            "groq_compound_beta": {
+                "url": self.GROQ_URL,
+                "model": "compound-beta",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: groq_api_key,
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
+            },
+            # Compound Beta Mini (Groq)
+            "groq_compound_beta_mini": {
+                "url": self.GROQ_URL,
+                "model": "compound-beta-mini",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: groq_api_key,
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
+            },
+            # Llama 4 Maverick (Groq)
+            "groq_llama4_maverick": {
+                "url": self.GROQ_URL,
+                "model": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: groq_api_key,
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
+            },
+            # Qwen QwQ 32B (Groq)
+            "groq_qwen_qwq_32b": {
+                "url": self.GROQ_URL,
+                "model": "qwen-qwq-32b",
+                "get_headers": self._get_bearer_headers,
+                "get_key": lambda: groq_api_key,
+                "max_tokens": DEFAULT_MAX_TOKENS,
+                "timeout": DEFAULT_TIMEOUT
             },
         }
 
@@ -675,6 +721,13 @@ class ProviderManager:
                 "chutes_qwen3_235b",
                 "chutes_microsoft_mai",
                 "chutes_glm4_32b"
+            ])
+        if is_valid_key(groq_api_key):
+            available.extend([
+                "groq_compound_beta",
+                "groq_compound_beta_mini",
+                "groq_llama4_maverick",
+                "groq_qwen_qwq_32b"
             ])
 
         return available
@@ -826,8 +879,6 @@ class ResponseGenerator:
             # Determinar el tipo de proveedor y procesar la respuesta
             if provider_name in ["gemini_20", "gemini_25"]:
                 return self._handle_gemini_request(provider, key, chat_history, new_question, provider_name)
-            elif provider_name == "moonshot" or provider_name.startswith("chutes"):
-                return self._handle_temperature_request(provider, key, chat_history, new_question, provider_name)
             else:
                 return self._handle_standard_request(provider, key, chat_history, new_question, provider_name)
 
@@ -889,7 +940,7 @@ class ResponseGenerator:
         headers = provider["get_headers"](key)
         url = provider["url"]
         model = provider["model"]
-        timeout = provider.get("timeout", 8)
+        timeout = provider.get("timeout", DEFAULT_TIMEOUT)
         if custom_data is not None:
             data = custom_data
         else:
@@ -903,18 +954,6 @@ class ResponseGenerator:
         system_prompt = self._get_system_prompt()
         messages = self._build_chat_history(chat_history, new_question, system_prompt, format_type="standard")
         return self._send_standard_request(provider, key, messages, provider_name)
-
-    def _handle_temperature_request(self, provider, key, chat_history, new_question, provider_name):
-        """Maneja las peticiones específicas para Moonshot"""
-        system_prompt = self._get_system_prompt()
-        messages = self._build_chat_history(chat_history, new_question, system_prompt, format_type="standard")
-        custom_data = {
-            "model": provider["model"],
-            "messages": messages,
-            "temperature": 0.8,
-            "max_tokens": provider.get("max_tokens", 800)
-        }
-        return self._send_standard_request(provider, key, messages, provider_name, custom_data=custom_data)
 
     def _get_system_prompt(self):
         """Genera el prompt del sistema optimizado para conversaciones en español"""
