@@ -971,16 +971,30 @@ Tu misión es ser un interlocutor conversador y útil: que la gente en {COUNTRY}
 
     def _build_request_data(self, provider, model, messages, provider_name):
         """Construye los datos de la petición según el tipo de proveedor"""
+
+        # Detectar si es un modelo de la serie "o" (o3, o4) que tiene restricciones especiales
+        # Usar regex para detectar cualquier variación de modelos o3/o4
+        import re
+        is_o_series_model = bool(re.search(r'(^|/)o[34](-\w+)?$', model))
+
+        # Base data - solo incluir temperature si el modelo lo soporta
         data = {
             "model": model,
             "messages": messages,
             "max_tokens": provider.get("max_tokens", 800),
-            "temperature": 0.8,
         }
 
+        # Solo agregar temperature si no es un modelo de la serie "o"
+        if not is_o_series_model:
+            data["temperature"] = 0.8
+
         # Ajustes específicos por proveedor
-        if provider_name == "github":
-            data["top_p"] = 0.9
+        if provider_name.startswith("github"):
+            # Para todos los modelos de GitHub, usar max_completion_tokens
+            data["max_completion_tokens"] = data.pop("max_tokens", 800)
+            # Solo agregar top_p si no es modelo de serie "o"
+            if not is_o_series_model:
+                data["top_p"] = 0.9
         elif provider_name.startswith("cerebras"):
             data.update({
                 "stream": False,
@@ -994,16 +1008,25 @@ Tu misión es ser un interlocutor conversador y útil: que la gente en {COUNTRY}
                 "top_p": 0.9
             })
         elif any(provider_name.startswith(prefix) for prefix in ["openrouter", "deepseek", "qwen", "microsoft", "llama", "google"]):
-            data.update({
-                "presence_penalty": 0.1,
-                "frequency_penalty": 0.1,
-                "top_p": 0.9
-            })
-        else:  # OpenAI
-            data.update({
-                "presence_penalty": 0.2,
-                "frequency_penalty": 0.2
-            })
+            # Para OpenRouter, verificar si es modelo serie "o"
+            if is_o_series_model:
+                # Solo usar max_completion_tokens para modelos serie "o" en OpenRouter
+                data["max_completion_tokens"] = data.pop("max_tokens", 800)
+            else:
+                data.update({
+                    "presence_penalty": 0.1,
+                    "frequency_penalty": 0.1,
+                    "top_p": 0.9
+                })
+        else:  # OpenAI directos
+            # Para modelos OpenAI que usan la serie "o" (o3, o4), usar max_completion_tokens
+            if is_o_series_model:
+                data["max_completion_tokens"] = data.pop("max_tokens", 800)
+            else:
+                data.update({
+                    "presence_penalty": 0.2,
+                    "frequency_penalty": 0.2
+                })
 
         return data
 
